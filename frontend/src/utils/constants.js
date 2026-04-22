@@ -35,8 +35,9 @@ export const EDGE_WIDTHS = {
 };
 
 // ── Websocket ─────────────────────────────────────────────────────────────── //
-export const WS_URL = 'ws://localhost:8000/ws/match';
-export const API_URL = 'http://localhost:8000';
+const envApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+export const API_URL = envApiUrl;
+export const WS_URL = import.meta.env.VITE_WS_URL || envApiUrl.replace('http', 'ws') + '/ws/match';
 
 // ── Graph Layout Options ──────────────────────────────────────────────────── //
 export const LAYOUT_OPTIONS = {
