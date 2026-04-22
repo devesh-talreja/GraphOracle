@@ -71,6 +71,7 @@ const GraphCanvas = forwardRef(function GraphCanvas(
     glowNode: (nodeId) => glowNode(cyRef.current, nodeId),
     fitGraph: () => cyRef.current?.fit(undefined, 60),
     resetView: () => cyRef.current?.reset(),
+    getScreenshot: () => cyRef.current?.png({ bg: '#0a0e1a', full: false, scale: 2, output: 'base64uri' }),
   }));
 
   // Initialize Cytoscape once

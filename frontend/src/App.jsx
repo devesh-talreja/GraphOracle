@@ -8,6 +8,7 @@ import { InsightStack } from './components/InsightCard';
 import PlaybackControls from './components/PlaybackControls';
 import NodeDetail from './components/NodeDetail';
 import GraphLegend from './components/GraphLegend';
+import ViralShareCard from './components/ViralShareCard';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useGraphState } from './hooks/useGraphState';
 
@@ -25,6 +26,7 @@ function App() {
   const [deliveryCommentary, setDeliveryCommentary] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
   const [roasts, setRoasts] = useState([]);
+  const [viralScreenshot, setViralScreenshot] = useState(null);
 
   const graphRef = useRef(null);
   const commentaryTimerRef = useRef(null);
@@ -276,6 +278,19 @@ function App() {
               <QueryBar onInsight={addInsight} />
             </div>
 
+            {/* Viral Share Button */}
+            <button
+              onClick={() => {
+                if (graphRef.current) {
+                  const uri = graphRef.current.getScreenshot();
+                  setViralScreenshot(uri);
+                }
+              }}
+              className="btn flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/20 text-violet-300 border border-violet-500/30 hover:bg-violet-600/40 hover:border-violet-400 font-bold tracking-widest rounded-lg transition-colors text-xs"
+            >
+              🚀 SHARE
+            </button>
+
             {/* Playback controls */}
             <PlaybackControls
               streamRunning={streamRunning}
@@ -346,6 +361,17 @@ function App() {
 
       {/* ── Insight Stack (bottom-right overlay) ─────────────────────────── */}
       <InsightStack insights={insights} onDismiss={dismissInsight} />
+
+      {/* Viral Share Modal */}
+      <AnimatePresence>
+        {viralScreenshot && (
+          <ViralShareCard 
+            screenshotUri={viralScreenshot} 
+            score={score}
+            onClose={() => setViralScreenshot(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
