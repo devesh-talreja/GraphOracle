@@ -16,6 +16,7 @@ export function useGraphState() {
   });
   const [lastDelivery, setLastDelivery] = useState(null);
   const [pressureIndex, setPressureIndex] = useState(0);
+  const [timeline, setTimeline] = useState([]);
 
   const updateFromMessage = useCallback((msg) => {
     if (msg.graph_state) {
@@ -26,6 +27,17 @@ export function useGraphState() {
     }
     if (msg.delivery) {
       setLastDelivery(msg.delivery);
+      setTimeline((prev) => {
+        let newTimeline = [...prev];
+        // If a new over started, maybe clear, but a rolling 6 is safer for display.
+        if (msg.score && msg.score.balls === 1 && prev.length >= 6) {
+           newTimeline = [];
+        }
+        if (msg.delivery.is_wicket) newTimeline.push('W');
+        else newTimeline.push(msg.delivery.runs);
+        if (newTimeline.length > 6) newTimeline = newTimeline.slice(newTimeline.length - 6);
+        return newTimeline;
+      });
     }
     if (msg.pressure_index !== undefined) {
       setPressureIndex(msg.pressure_index);
@@ -37,6 +49,7 @@ export function useGraphState() {
     score,
     lastDelivery,
     pressureIndex,
+    timeline,
     updateFromMessage,
     setGraphState,
     setScore,

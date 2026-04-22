@@ -9,6 +9,7 @@ import PlaybackControls from './components/PlaybackControls';
 import NodeDetail from './components/NodeDetail';
 import GraphLegend from './components/GraphLegend';
 import ViralShareCard from './components/ViralShareCard';
+import H2HModal from './components/H2HModal';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useGraphState } from './hooks/useGraphState';
 
@@ -16,7 +17,7 @@ let insightIdCounter = 1;
 
 function App() {
   const { status: wsStatus, on: onWsMessage, emit: wsEmit } = useWebSocket();
-  const { graphState, score, lastDelivery, pressureIndex, updateFromMessage } = useGraphState();
+  const { graphState, score, lastDelivery, pressureIndex, timeline, updateFromMessage } = useGraphState();
 
   const [insights, setInsights] = useState([]);
   const [streamRunning, setStreamRunning] = useState(false);
@@ -27,11 +28,17 @@ function App() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [roasts, setRoasts] = useState([]);
   const [viralScreenshot, setViralScreenshot] = useState(null);
+  const [h2hData, setH2hData] = useState(null);
+  const [isStadiumTheme, setIsStadiumTheme] = useState(false);
 
   const graphRef = useRef(null);
   const commentaryTimerRef = useRef(null);
 
   // ── WebSocket handlers ───────────────────────────────────────────────────
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isStadiumTheme ? 'stadium' : 'default');
+  }, [isStadiumTheme]);
+
   useEffect(() => {
     onWsMessage('initial_state', (msg) => {
       updateFromMessage(msg);
@@ -132,18 +139,10 @@ function App() {
       const srcNode = graphState.nodes?.find((n) => n.id === edgeData.source);
       const tgtNode = graphState.nodes?.find((n) => n.id === edgeData.target);
       if (srcNode && tgtNode) {
-        const body = `${srcNode.name} vs ${tgtNode.name}: ${edgeData.runs}R off ${edgeData.balls}B` +
-          (edgeData.wickets > 0 ? ` — DISMISSED!` : '') +
-          `. SR: ${edgeData.balls > 0 ? ((edgeData.runs / edgeData.balls) * 100).toFixed(1) : 0}%`;
-        addInsight({
-          type: 'nl_query_response',
-          title: `⚔️ ${srcNode.name} vs ${tgtNode.name}`,
-          body,
-          severity: edgeData.wickets > 0 ? 'critical' : 'info',
-        });
+        setH2hData({ edge: edgeData, sourceNode: srcNode, targetNode: tgtNode });
       }
     }
-  }, [graphState.nodes, addInsight]);
+  }, [graphState.nodes]);
 
   // ── Compute stats for legend ─────────────────────────────────────────────
   const nodeCount = graphState.nodes?.length || 0;
@@ -158,6 +157,7 @@ function App() {
         streamRunning={streamRunning}
         deliveryCommentary={deliveryCommentary}
         pressureIndex={pressureIndex}
+        timeline={timeline}
       />
 
       {/* ── Main Content Area ─────────────────────────────────────────────── */}
@@ -262,6 +262,19 @@ function App() {
 
           {/* ── Floating Controls Overlay ────────────────────────────────── */}
           <div className="absolute top-3 left-3 right-3 z-30 flex items-center gap-3 flex-wrap">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setIsStadiumTheme(!isStadiumTheme)}
+              className={`btn flex items-center gap-1.5 px-3 py-1.5 font-bold tracking-widest rounded-lg transition-colors text-xs flex-shrink-0 ${
+                isStadiumTheme
+                  ? 'bg-green-600/20 text-green-400 border border-green-500/30 hover:bg-green-600/30 shadow-[0_0_15px_rgba(0,255,0,0.2)]'
+                  : 'bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10'
+              }`}
+            >
+              <span>{isStadiumTheme ? '🏟️' : '🌙'}</span>
+              STADIUM LIGHTS
+            </button>
+
             {/* Sidebar toggle */}
             <button
               onClick={() => setShowSidebar((s) => !s)}
@@ -369,6 +382,16 @@ function App() {
             screenshotUri={viralScreenshot} 
             score={score}
             onClose={() => setViralScreenshot(null)} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* H2H Battle Modal */}
+      <AnimatePresence>
+        {h2hData && (
+          <H2HModal 
+            {...h2hData}
+            onClose={() => setH2hData(null)}
           />
         )}
       </AnimatePresence>

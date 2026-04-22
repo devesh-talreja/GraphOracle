@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { COLORS } from '../utils/constants';
 
-function Scoreboard({ score, wsStatus, streamRunning, deliveryCommentary, pressureIndex = 0 }) {
+function Scoreboard({ score, wsStatus, streamRunning, deliveryCommentary, pressureIndex = 0, timeline = [] }) {
   const inningsLabel = score.innings === 1 ? '1st Innings' : '2nd Innings';
   const progressBalls = (score.overs * 6 + score.balls);
   const maxBalls = 120;
@@ -83,6 +83,28 @@ function Scoreboard({ score, wsStatus, streamRunning, deliveryCommentary, pressu
             </>
           )}
         </div>
+
+        {/* Timeline Ribbon */}
+        {timeline.length > 0 && (
+          <div className="flex gap-1.5 ml-4 items-center bg-black/20 px-2.5 py-1.5 rounded-xl border border-white/5 shadow-inner">
+            <span className="text-[8px] uppercase tracking-widest text-slate-500 mr-1 font-bold">This Over</span>
+            {timeline.map((ball, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-black shadow-sm transition-colors ${
+                  ball === 'W' ? 'bg-red-500 text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]' : 
+                  ball === 4 || ball === '4' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50' : 
+                  ball === 6 || ball === '6' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/50' : 
+                  'bg-white/5 text-slate-300 border border-white/10'
+                }`}
+              >
+                {ball}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Divider */}
