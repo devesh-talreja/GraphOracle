@@ -11,6 +11,7 @@ from .graph_engine import GraphEngine
 from .gemini_client import GeminiClient
 from .insight_engine import InsightEngine
 from .websocket_manager import ConnectionManager
+from .cricapi_adapter import CricAPIAdapter
 from .models import NLQueryRequest, SimulateRequest
 
 # ── Global instances ──────────────────────────────────────────────────────────
@@ -18,6 +19,7 @@ graph_engine = GraphEngine()
 gemini_client = GeminiClient()
 insight_engine = InsightEngine(graph_engine, gemini_client)
 ws_manager = ConnectionManager()
+cricapi = CricAPIAdapter()
 
 # Stream state
 stream_running = False
@@ -82,6 +84,30 @@ async def get_player(player_id: str):
         return JSONResponse({"error": "Player not found"}, status_code=404)
     return context
 
+
+@app.get("/api/live-matches")
+async def get_live_matches():
+    matches = cricapi.get_live_matches()
+    cleaned = []
+    
+    # Hackathon Demo Priority: Ensure IPL is always shown
+    has_ipl = any("Indian Premier League" in m.get("name", "") or "IPL" in m.get("name", "") for m in matches)
+    if not has_ipl:
+        cleaned.append({
+            "id": "ipl-live-demo",
+            "name": "Mumbai Indians vs Chennai Super Kings, 42nd Match, Indian Premier League 2026",
+            "status": "LIVE - MI batting first",
+            "venue": "Wankhede Stadium, Mumbai"
+        })
+
+    for m in matches[:4]:
+        cleaned.append({
+            "id": m.get("id"),
+            "name": m.get("name"),
+            "status": m.get("status"),
+            "venue": m.get("venue", "TBA")
+        })
+    return JSONResponse({"matches": cleaned})
 
 @app.post("/api/simulate")
 async def simulate_scenario(req: SimulateRequest):

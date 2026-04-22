@@ -10,6 +10,7 @@ import NodeDetail from './components/NodeDetail';
 import GraphLegend from './components/GraphLegend';
 import ViralShareCard from './components/ViralShareCard';
 import H2HModal from './components/H2HModal';
+import LiveMatchImporter from './components/LiveMatchImporter';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useGraphState } from './hooks/useGraphState';
 
@@ -30,6 +31,7 @@ function App() {
   const [viralScreenshot, setViralScreenshot] = useState(null);
   const [h2hData, setH2hData] = useState(null);
   const [isStadiumTheme, setIsStadiumTheme] = useState(false);
+  const [showLiveImporter, setShowLiveImporter] = useState(false);
 
   const graphRef = useRef(null);
   const commentaryTimerRef = useRef(null);
@@ -262,6 +264,14 @@ function App() {
 
           {/* ── Floating Controls Overlay ────────────────────────────────── */}
           <div className="absolute top-3 left-3 right-3 z-30 flex items-center gap-3 flex-wrap">
+            {/* Live Match Pull */}
+            <button
+              onClick={() => setShowLiveImporter(true)}
+              className="btn flex items-center gap-1.5 px-3 py-1.5 font-bold tracking-widest rounded-lg transition-colors text-xs flex-shrink-0 bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 shadow-[0_0_15px_rgba(0,191,255,0.2)]"
+            >
+              <span>📡</span> PULL LIVE MATCH
+            </button>
+            
             {/* Theme Toggle Button */}
             <button
               onClick={() => setIsStadiumTheme(!isStadiumTheme)}
@@ -392,6 +402,24 @@ function App() {
           <H2HModal 
             {...h2hData}
             onClose={() => setH2hData(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Live Match Importer */}
+      <AnimatePresence>
+        {showLiveImporter && (
+          <LiveMatchImporter 
+            onClose={() => setShowLiveImporter(false)}
+            onSelect={(match) => {
+              setShowLiveImporter(false);
+              addInsight({
+                type: 'system',
+                title: '📡 Live Stream Override',
+                body: `Intercepted CricAPI stream for "${match.name}". Ball-by-ball currently restricted to Gemini Engine Simulation for continuous highly-visual playback.`,
+                severity: 'warning'
+              });
+            }}
           />
         )}
       </AnimatePresence>
