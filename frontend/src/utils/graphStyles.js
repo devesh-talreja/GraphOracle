@@ -51,27 +51,36 @@ export const buildCytoscapeStylesheet = () => [
     style: {
       'width': (ele) => getNodeSize(ele.data()),
       'height': (ele) => getNodeSize(ele.data()),
-      'background-color': (ele) => getNodeColor(ele.data('role')),
+      'background-fill': 'radial-gradient',
+      'background-gradient-stop-colors': (ele) => `${getNodeColor(ele.data('role'))} #0a0e1a`,
+      'background-gradient-stop-positions': '0 100',
       'background-opacity': 0.9,
-      'border-width': 2.5,
+      'border-width': 3,
       'border-color': (ele) => getNodeColor(ele.data('role')),
-      'border-opacity': 0.7,
-      'color': '#e2e8f0',
-      'font-size': '11px',
+      'border-opacity': 0.8,
+      'color': '#ffffff',
+      'font-size': '12px',
       'font-family': 'Inter, system-ui',
-      'font-weight': '600',
+      'font-weight': 'bold',
       'text-valign': 'bottom',
       'text-halign': 'center',
       'text-margin-y': 6,
       'text-wrap': 'wrap',
       'text-max-width': '100px',
+      'text-background-color': '#050a15',
+      'text-background-opacity': 0.85,
+      'text-background-padding': '4px',
+      'text-background-shape': 'roundrectangle',
+      'text-border-color': (ele) => getNodeColor(ele.data('role')),
+      'text-border-width': 1,
+      'text-border-opacity': 0.4,
       'label': (ele) => {
         const name = ele.data('name') || '';
         const parts = name.split(' ');
         return parts.length > 1 ? parts[parts.length - 1] : name;
       },
-      'text-outline-color': '#0a0e1a',
-      'text-outline-width': 2,
+      'text-outline-color': '#000000',
+      'text-outline-width': 1,
       'shadow-blur': 15,
       'shadow-color': (ele) => getNodeColor(ele.data('role')),
       'shadow-opacity': 0.5,
@@ -100,6 +109,23 @@ export const buildCytoscapeStylesheet = () => [
     style: {
       'shape': 'hexagon',
       'font-size': '10px',
+    },
+  },
+
+  // ── Batsman Node ──────────────────────────────────────────────────────
+  {
+    selector: 'node[role = "batsman"]',
+    style: {
+      'shape': 'hexagon',
+    },
+  },
+
+  // ── Bowler Node ───────────────────────────────────────────────────────
+  {
+    selector: 'node[role = "bowler"]',
+    style: {
+      'shape': 'round-rectangle',
+      'corner-radius': '12px',
     },
   },
 
@@ -150,11 +176,11 @@ export const buildCytoscapeStylesheet = () => [
     selector: 'node[centrality > 0.08]',
     style: {
       'underlay-color': '#facc15',
-      'underlay-padding': 6,
-      'underlay-opacity': 0.8,
+      'underlay-padding': 12,
+      'underlay-opacity': 0.6,
       'underlay-shape': 'ellipse',
       'border-color': '#facc15',
-      'border-width': 3.5,
+      'border-width': 4,
     },
   },
 
@@ -167,9 +193,10 @@ export const buildCytoscapeStylesheet = () => [
       'line-opacity': 0.7,
       'target-arrow-color': (ele) => getEdgeColor(ele.data()),
       'target-arrow-shape': 'triangle',
-      'arrow-scale': 0.8,
-      'curve-style': 'bezier',
-      'control-point-step-size': 40,
+      'arrow-scale': 1.1,
+      'curve-style': 'unbundled-bezier',
+      'control-point-distances': (ele) => [(ele.source().id() > ele.target().id() ? 20 : -20)],
+      'control-point-weights': [0.5],
       'z-index': 1,
       'transition-property': 'width, line-color, line-opacity',
       'transition-duration': '0.4s',
